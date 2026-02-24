@@ -1,0 +1,12 @@
+# Entorno virtual
+venv/
+__pycache__/
+.pytest_cache/
+
+# Variables de entorno (Seguridad)
+.env
+
+# Datos locales
+data/
+*.csv
+*.json
