@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  # Servicio 1: La Base de Datos
+  db_postgres:
+    image: postgres:15
+    container_name: postgres_container
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5433:5432" # Mapeamos al puerto 5433 para no chocar con tu Postgres local
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Servicio 2: Tu Pipeline ETL
+  etl_pipeline:
+    build: .
+    container_name: etl_container
+    depends_on:
+      - db_postgres # Espera a que la DB esté lista
+    env_file:
+      - .env
+    environment:
+      # CAMBIO CLAVE: Ya no es localhost, es el nombre del servicio
+      DB_HOST: db_postgres 
+
+volumes:
+  postgres_data:
