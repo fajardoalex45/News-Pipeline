@@ -1,7 +1,24 @@
 version: '3.8'
 
+# Configuraciones comunes para todos los servicios de Airflow
+x-airflow-common:
+  &airflow-common
+  build: .
+  environment:
+    # Conectamos Airflow a tu misma base de datos para que guarde su configuración ahí
+    - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@db_postgres:5432/${DB_NAME}
+    - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+    - AIRFLOW__CORE__LOAD_EXAMPLES=false # Apagamos los ejemplos por defecto
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./logs:/opt/airflow/logs
+    - ./plugins:/opt/airflow/plugins
+    - .:/opt/airflow/project # <--- Truco maestro: Airflow podrá ver y ejecutar tu carpeta entera (incluyendo tu main.py y /data)
+  depends_on:
+    - db_postgres
+
 services:
-  # Servicio 1: La Base de Datos
+  # 1. Tu Base de Datos de Noticias (Intacta)
   db_postgres:
     image: postgres:15
     container_name: postgres_container
@@ -11,21 +28,41 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     ports:
-      - "5433:5432" # Mapeamos al puerto 5433 para no chocar con tu Postgres local
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  # Servicio 2: Tu Pipeline ETL
-  etl_pipeline:
-    build: .
-    container_name: etl_container
-    depends_on:
-      - db_postgres # Espera a que la DB esté lista
-    env_file:
-      - .env
+  # 2. El Inicializador (Solo corre una vez para crear las tablas internas de Airflow)
+  airflow-init:
+    <<: *airflow-common
+    container_name: airflow_init
+    command: version
     environment:
-      # CAMBIO CLAVE: Ya no es localhost, es el nombre del servicio
-      DB_HOST: db_postgres 
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@db_postgres:5432/${DB_NAME}
+      - _AIRFLOW_DB_MIGRATE=true
+      - _AIRFLOW_WWW_USER_CREATE=true
+      - _AIRFLOW_WWW_USER_USERNAME=admin
+      - _AIRFLOW_WWW_USER_PASSWORD=admin # <--- Con esto entrarás a la web de Airflow
+
+  # 3. El Webserver (La interfaz gráfica que veremos en el navegador)
+  airflow-webserver:
+    <<: *airflow-common
+    container_name: airflow_webserver
+    restart: always
+    command: webserver
+    ports:
+      - "8080:8080" # Airflow vivirá en tu puerto 8080
+    depends_on:
+      - airflow-init
+
+  # 4. El Scheduler (El Programador que vigilará el reloj)
+  airflow-scheduler:
+    <<: *airflow-common
+    container_name: airflow_scheduler
+    restart: always
+    command: scheduler
+    depends_on:
+      - airflow-init
 
 volumes:
   postgres_data:

@@ -10,4 +10,4 @@ __pycache__/
 # Datos locales
 data/
 *.csv
-*.json
+*.jsongi

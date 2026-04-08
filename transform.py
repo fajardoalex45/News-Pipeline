@@ -2,6 +2,7 @@ import pandas as pd
 import json
 import os
 from glob import glob
+from datetime import datetime
 
 class NewsTransformer:
     def __init__(self):
@@ -33,6 +34,9 @@ class NewsTransformer:
         # Aplanar fuente
         df['source_name'] = df['source'].apply(lambda x: x.get('name') if isinstance(x, dict) else 'Unknown')
         
+        # Agregar fecha de inserción (útil para tracking y debugging)
+        df['fecha_insercion_etl'] = datetime.now()
+
         # Solo nos quedamos con las columnas que son texto simple o fecha.
         # Eliminamos 'source' porque es un diccionario.
         columns_to_keep = [
@@ -42,7 +46,8 @@ class NewsTransformer:
             'url', 
             'publishedAt', 
             'source_name',  # Usamos nuestra versión limpia
-            'content'
+            'content',
+            'fecha_insercion_etl'
         ]
         
         # Filtramos el DataFrame
