@@ -10,7 +10,7 @@ class NewsLoader:
         # Cargamos credenciales del .env (Asegúrate de agregarlas)
         self.user = os.getenv("DB_USER", "postgres")
         self.password = os.getenv("DB_PASSWORD")
-        self.host = os.getenv("DB_HOST", "localhost")
+        self.host = os.getenv("DB_HOST", "db_postgres")
         self.port = os.getenv("DB_PORT", "5432")
         self.db = os.getenv("DB_NAME", "news_db")
         
@@ -26,8 +26,7 @@ class NewsLoader:
             print("✅ Smoke Test DB: Conexión exitosa.")
             return True
         except Exception as e:
-            print(f"❌ Smoke Test DB: Falló la conexión. Error: {e}")
-            return False
+            raise ConnectionError(f"❌ Falló conexión a Postgres: {e}")
 
     def load_to_postgres(self, df, table_name="news_articles"):
         """Carga el DataFrame en la tabla de Postgres."""

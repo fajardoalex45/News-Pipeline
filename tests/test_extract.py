@@ -1,6 +1,6 @@
 import unittest
 import os
-from extract import NewsExtractor
+from src.extract import NewsExtractor
 from unittest.mock import patch 
 from requests.exceptions import HTTPError, Timeout, ConnectionError
 

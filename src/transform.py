@@ -2,11 +2,16 @@ import pandas as pd
 import json
 import os
 from glob import glob
+from datetime import datetime, timezone
+
 
 class NewsTransformer:
     def __init__(self):
-        self.landing_path = "data/landing"
-        self.processed_path = "data/processed"
+        # 1. Leemos las variables que definimos en el .env y pasamos por docker-compose
+        self.landing_path = os.getenv("RAW_DATA_PATH", "/opt/airflow/data/landing")
+        self.processed_path = os.getenv("PROCESSED_DATA_PATH", "/opt/airflow/data/processed")
+
+        # 2. Aseguramos que la carpeta de salida exista en el volumen
         os.makedirs(self.processed_path, exist_ok=True)
 
     def get_latest_file(self):
@@ -33,6 +38,9 @@ class NewsTransformer:
         # Aplanar fuente
         df['source_name'] = df['source'].apply(lambda x: x.get('name') if isinstance(x, dict) else 'Unknown')
         
+        # Agregar fecha de inserción (útil para tracking y debugging)
+        df['fecha_insercion_etl'] = datetime.now(timezone.utc)
+
         # Solo nos quedamos con las columnas que son texto simple o fecha.
         # Eliminamos 'source' porque es un diccionario.
         columns_to_keep = [
@@ -42,7 +50,8 @@ class NewsTransformer:
             'url', 
             'publishedAt', 
             'source_name',  # Usamos nuestra versión limpia
-            'content'
+            'content',
+            'fecha_insercion_etl'
         ]
         
         # Filtramos el DataFrame
@@ -65,6 +74,7 @@ class NewsTransformer:
         path = f"{self.processed_path}/{filename}.csv"
         df.to_csv(path, index=False)
         print(f"✅ Datos limpios guardados en: {path}")
+        return path
 
 if __name__ == "__main__":
     transformer = NewsTransformer()

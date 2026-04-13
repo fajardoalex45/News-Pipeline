@@ -1,6 +1,6 @@
 import unittest
 import pandas as pd
-from transform import NewsTransformer  # <--- AQUÍ invocamos tu código real
+from src.transform import NewsTransformer  # <--- AQUÍ invocamos tu código real
 
 class TestNewsTransform(unittest.TestCase):
     
