@@ -27,7 +27,7 @@ with DAG(
     # Como mapeamos toda tu carpeta en /opt/airflow/project, Airflow puede ver tu archivo main.py
     run_etl = BashOperator(
         task_id='run_main_python_script',
-        bash_command='python /opt/airflow/project/main.py',
+        bash_command='python /opt/airflow/src/main.py',
     )
 
     # 4. El orden de ejecución (Si tuviéramos más tareas, aquí haríamos las flechitas)

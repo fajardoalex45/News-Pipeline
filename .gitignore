@@ -1,3 +1,12 @@
+# Airflow - No queremos subir logs ni bases de datos locales de SQLite
+logs/
+airflow.db
+airflow.cfg
+webserver_config.py
+
+# Docker - A veces se generan archivos temporales
+.docker/
+
 # Entorno virtual
 venv/
 __pycache__/
@@ -10,4 +19,4 @@ __pycache__/
 # Datos locales
 data/
 *.csv
-*.jsongi
+*.json

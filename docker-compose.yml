@@ -5,15 +5,29 @@ x-airflow-common:
   &airflow-common
   build: .
   environment:
+    # Cargamos las credenciales del user de AWS para que Airflow pueda usar los recursos de AWS (S3,etc)
+    - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+    - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+    - AWS_REGION=${AWS_REGION}
+    - S3_BUCKET_NAME=${S3_BUCKET_NAME}
     # Conectamos Airflow a tu misma base de datos para que guarde su configuración ahí
+    - NEWS_API_KEY=${NEWS_API_KEY}
+    - DB_HOST=${DB_HOST}
+    - DB_USER=${DB_USER}
+    - DB_PASSWORD=${DB_PASSWORD}
+    - DB_NAME=${DB_NAME}
     - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@db_postgres:5432/${DB_NAME}
     - AIRFLOW__CORE__EXECUTOR=LocalExecutor
     - AIRFLOW__CORE__LOAD_EXAMPLES=false # Apagamos los ejemplos por defecto
+    - RAW_DATA_PATH=${RAW_DATA_PATH}
+    - PROCESSED_DATA_PATH=${PROCESSED_DATA_PATH}
+    - SLACK_WEBHOOK=${SLACK_WEBHOOK}
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
-    - .:/opt/airflow/project # <--- Truco maestro: Airflow podrá ver y ejecutar tu carpeta entera (incluyendo tu main.py y /data)
+    - ./src:/opt/airflow/src
+    - ./data:/opt/airflow/data
   depends_on:
     - db_postgres
 

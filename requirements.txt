@@ -6,7 +6,9 @@ urllib3==2.6.3
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.1
 requests==2.32.5
-six==1.17.0
+six==1.17.
+boto3
+great_expectations
 
 #These libraries are installed in Airflow image, so they are not needed in the requirements.txt file for the ETL script. However, if you want to run the ETL script locally, you can uncomment these lines and install the libraries.
 #SQLAlchemy==2.0.46
